@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pasta e Basta II — Opening Budget</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+
+:root{--cream:#F5F0E8;--parch:#EDE5D4;--tc:#C4622D;--tcp:#F2D4C4;--esp:#2C1810;--bark:#6B4226;--sage:#7A8C6E;--sagep:#D4DDD0;--gold:#B8882A;--goldp:#F0E4C0;--ink:#1A1208;--mid:#8A7560;--bdr:rgba(44,24,16,.12);--shad:0 2px 24px rgba(44,24,16,.08);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--cream);color:var(--esp);font-family:'DM Sans',sans-serif;font-weight:300;}
+.page{max-width:1140px;margin:0 auto;padding:44px 32px 80px;}
+.tab-bar{display:flex;border-bottom:1.5px solid var(--esp);margin-bottom:36px;}
+.tab-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.15em;text-transform:uppercase;padding:10px 22px;cursor:pointer;border:none;background:none;color:var(--mid);border-bottom:3px solid transparent;margin-bottom:-1.5px;transition:all .15s;}
+.tab-btn.active{color:var(--tc);border-bottom-color:var(--tc);}
+.tab-pane{display:none;}.tab-pane.active{display:block;}
+.hdr{display:grid;grid-template-columns:1fr auto;align-items:start;padding-bottom:22px;border-bottom:1.5px solid var(--esp);margin-bottom:36px;animation:fadeUp .5s ease both;}
+.logo img{height:32px;mix-blend-mode:multiply;}
+.hdr-sub{font-size:11.5px;color:var(--mid);margin-top:6px;}
+.as-of{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--mid);margin-bottom:3px;}
+.datestamp{font-family:'Playfair Display',serif;font-size:15px;font-weight:600;color:var(--esp);}
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:36px;animation:fadeUp .5s .08s ease both;}
+.kpi{background:var(--parch);padding:18px 16px;}.kpi:first-child{border-radius:6px 0 0 6px;}.kpi:last-child{border-radius:0 6px 6px 0;}
+.kpi.acc{background:var(--esp);}.kpi.warn{background:var(--tcp);}.kpi.good{background:var(--sagep);}
+.kpi-l{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.17em;text-transform:uppercase;color:var(--mid);margin-bottom:7px;}
+.kpi.acc .kpi-l{color:rgba(245,240,232,.45);}.kpi.warn .kpi-l{color:var(--bark);}.kpi.good .kpi-l{color:var(--sage);}
+.kpi-v{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;line-height:1;color:var(--ink);letter-spacing:-.02em;}
+.kpi.acc .kpi-v{color:var(--cream);}.kpi.warn .kpi-v{color:var(--tc);}.kpi.good .kpi-v{color:var(--sage);}
+.kpi-s{font-size:10.5px;color:var(--mid);margin-top:4px;}.kpi.acc .kpi-s{color:rgba(245,240,232,.4);}
+.sec{font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:12px;}
+.sec::after{content:'';flex:1;height:1px;background:var(--bdr);}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:26px;}
+.card{background:#fff;border-radius:8px;padding:20px 18px;box-shadow:var(--shad);animation:fadeUp .5s .15s ease both;}
+.card-t{font-family:'Playfair Display',serif;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:12px;}
+.chart-leg{display:flex;gap:10px;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid var(--parch);flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--mid);}
+.lsw{width:16px;border-radius:2px;}
+.bvc-row{margin-bottom:9px;}
+.bvc-hdr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px;gap:6px;}
+.bvc-nm{font-size:10px;color:var(--esp);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bvc-amts{display:flex;gap:6px;flex-shrink:0;}
+.bvc-b{font-family:'DM Mono',monospace;font-size:9px;color:var(--mid);}
+.bvc-e{font-family:'DM Mono',monospace;font-size:9px;font-weight:500;}
+.bvc-e.over{color:var(--tc);}.bvc-e.under{color:var(--sage);}.bvc-e.same,.bvc-e.zero{color:var(--mid);}.bvc-e.blue{color:#3B6FBF;font-weight:500;}
+.bvc-tracks{display:flex;flex-direction:column;gap:2px;}
+.bvc-track{height:5px;background:var(--parch);border-radius:2px;overflow:hidden;}
+.bvc-fill{height:100%;border-radius:2px;}
+.budget-bar{background:rgba(138,117,96,.28);}
+.est-bar.over{background:var(--tc);}.est-bar.under{background:var(--sage);}.est-bar.same{background:rgba(138,117,96,.6);}.est-bar.zero{background:var(--parch);}.est-bar.blue{background:#3B6FBF;}
+.bvc-pr{display:flex;align-items:center;gap:5px;margin-top:1px;}
+.bvc-pt{flex:1;height:2px;background:var(--parch);border-radius:1px;overflow:hidden;}
+.bvc-pf{height:100%;background:var(--sage);border-radius:1px;}
+.bvc-pl{font-family:'DM Mono',monospace;font-size:8px;color:var(--sage);}
+.bvc-plz{font-family:'DM Mono',monospace;font-size:8px;color:var(--parch);}
+.ring-wrap{display:flex;align-items:center;justify-content:center;padding:8px 0;}
+.ring-chart{position:relative;width:130px;height:130px;flex-shrink:0;}
+.ring-chart svg{transform:rotate(-90deg);}
+.ring-ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.ring-pct{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:var(--ink);line-height:1;}
+.ring-lbl{font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);margin-top:3px;}
+.rleg{display:flex;flex-direction:column;gap:8px;margin-left:20px;}
+.rleg-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--esp);}
+.rdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.rval{font-family:'DM Mono',monospace;font-size:10px;color:var(--mid);margin-left:auto;padding-left:8px;}
+.tcard{background:#fff;border-radius:8px;box-shadow:var(--shad);overflow-x:auto;overflow-y:hidden;margin-bottom:22px;animation:fadeUp .5s .2s ease both;}
+table{width:100%;border-collapse:collapse;}
+thead tr{background:var(--esp);color:var(--cream);}
+thead th{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.13em;text-transform:uppercase;font-weight:400;padding:11px 12px;text-align:left;white-space:nowrap;}table{min-width:860px;}
+thead th.num{text-align:right;}
+tbody tr{border-bottom:1px solid var(--parch);cursor:pointer;transition:background .1s;}
+tbody tr:hover td{background:#F2EDE4 !important;}
+tr.row-over{background:#FEF0EA;}tr.row-new{background:var(--goldp);}
+tr.row-ti{background:var(--parch);cursor:default;}tr.row-ti:hover td{background:var(--parch) !important;}
+tr.total-row{background:var(--esp);cursor:default;}tr.total-row:hover td{background:var(--esp) !important;}
+td{padding:9px 12px;font-size:11.5px;color:var(--esp);vertical-align:middle;white-space:nowrap;}
+td.num{text-align:right;font-family:'DM Mono',monospace;font-size:10.5px;}
+tr.total-row td{color:var(--cream);font-weight:500;font-size:12px;}
+tr.row-ti td{color:var(--sage);font-style:italic;font-size:11px;}
+.dp{color:var(--tc);font-weight:500;}.dn{color:var(--sage);}
+.badge{display:inline-block;font-family:'DM Mono',monospace;font-size:7.5px;letter-spacing:.07em;text-transform:uppercase;padding:2px 4px;border-radius:3px;margin-left:4px;vertical-align:middle;white-space:nowrap;}
+.bover{background:var(--tcp);color:var(--tc);}.bnew{background:var(--goldp);color:var(--bark);}.bpaid{background:var(--sagep);color:var(--sage);}.bpart{background:var(--sagep);color:var(--sage);}
+.pill-wrap{display:flex;align-items:center;gap:4px;justify-content:flex-end;}
+.pill-track{width:40px;height:4px;background:var(--parch);border-radius:2px;overflow:hidden;}
+.pill-fill{height:100%;border-radius:2px;background:var(--sage);}
+.pill-pct{font-family:'DM Mono',monospace;font-size:9px;color:var(--mid);width:24px;text-align:right;}
+.hint{font-size:11px;color:var(--mid);margin-bottom:10px;margin-top:-8px;}
+.detail-layout{display:grid;grid-template-columns:270px 1fr;gap:0;background:#fff;border-radius:8px;box-shadow:var(--shad);overflow:hidden;min-height:620px;animation:fadeUp .5s .1s ease both;}
+.cat-list{background:var(--esp);overflow-y:auto;}
+.cat-list-hdr{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(245,240,232,.4);padding:14px 14px 9px;border-bottom:1px solid rgba(245,240,232,.1);}
+.cat-item{padding:9px 14px;font-size:11.5px;color:rgba(245,240,232,.65);cursor:pointer;border-left:3px solid transparent;transition:all .1s;border-bottom:1px solid rgba(245,240,232,.05);line-height:1.3;}
+.cat-item:hover{background:rgba(245,240,232,.08);color:var(--cream);}
+.cat-item.active{background:rgba(245,240,232,.12);color:var(--cream);border-left-color:var(--tc);}
+.cat-item.ti-cat{color:rgba(122,140,110,.75);}.cat-item.ti-cat.active{border-left-color:var(--sage);}
+.cat-item.new-cat{color:rgba(184,136,42,.8);}.cat-item.new-cat.active{border-left-color:var(--gold);}
+.detail-pane{padding:26px 26px;overflow-y:auto;overflow-x:auto;}
+.detail-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--mid);font-size:13px;font-style:italic;}
+.dcat-name{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+.dmeta{display:flex;gap:18px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--parch);flex-wrap:wrap;}
+.dmi{display:flex;flex-direction:column;gap:2px;}
+.dml{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:var(--mid);}
+.dmv{font-family:'DM Mono',monospace;font-size:12.5px;color:var(--ink);font-weight:500;}
+.dmv.dp{color:var(--tc);}.dmv.dn{color:var(--sage);}.dmv.sage{color:var(--sage);}
+.dtw{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+table.dtbl{width:100%;min-width:600px;border-collapse:collapse;}
+table.dtbl thead tr{background:var(--parch);}
+table.dtbl th{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.11em;text-transform:uppercase;color:var(--mid);font-weight:400;padding:8px 11px;text-align:left;border-bottom:1px solid var(--bdr);}
+table.dtbl th.n{text-align:right;}
+table.dtbl td{font-size:11.5px;color:var(--esp);padding:8px 11px;border-bottom:1px solid var(--parch);}
+table.dtbl td.n{text-align:right;font-family:'DM Mono',monospace;font-size:10.5px;}
+table.dtbl tr:last-child td{border-bottom:none;}
+table.dtbl tr:hover td{background:#F8F5F0;}
+.note-pill{display:inline-block;font-size:10px;color:var(--mid);font-style:italic;background:var(--parch);padding:1px 6px;border-radius:3px;}
+.footer{margin-top:44px;padding-top:16px;border-top:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;}
+.fl{font-family:'Playfair Display',serif;font-size:12px;font-style:italic;color:var(--mid);}
+.fr{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mid);}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@media(max-width:768px){.kpi-strip{grid-template-columns:1fr 1fr;}.two-col{grid-template-columns:1fr;}.detail-layout{grid-template-columns:1fr;}.cat-list{max-height:200px;}}
+
+
+/* ── CASH TAB ── */
+.cash-layout{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px;}
+.cash-kpi-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-bottom:26px;}
+
+.sec-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--mid);margin-bottom:10px;margin-top:18px;}
+
+/* transaction tables */
+.cash-tcard{background:#fff;border-radius:8px;box-shadow:var(--shad);overflow-x:auto;overflow-y:hidden;margin-bottom:22px;}
+.cash-tcard table{min-width:600px;}.cash-tcard table thead tr{background:var(--esp);}
+.cash-tcard table tbody tr td.red{color:var(--tc);font-family:'DM Mono',monospace;font-size:10.5px;text-align:right;}
+.cash-tcard table tbody tr td.grn{color:var(--sage);font-family:'DM Mono',monospace;font-size:10.5px;text-align:right;}
+
+/* investor bars */
+.inv-summary-card{background:#fff;border-radius:8px;box-shadow:var(--shad);padding:20px 18px;}
+.inv-row-item{display:grid;grid-template-columns:80px 1fr 80px 44px;align-items:center;gap:10px;margin-bottom:12px;}
+.inv-name{font-family:'Playfair Display',serif;font-size:13px;font-weight:600;color:var(--ink);}
+.inv-bar-wrap{height:8px;background:var(--parch);border-radius:4px;overflow:hidden;}
+.inv-bar-fill{height:100%;border-radius:4px;transition:width 1s ease;}
+.inv-amt{font-family:'DM Mono',monospace;font-size:11px;color:var(--esp);text-align:right;}
+.inv-pct{font-family:'DM Mono',monospace;font-size:10px;color:var(--mid);text-align:right;}
+.inv-total-row{display:grid;grid-template-columns:80px 1fr 80px 44px;align-items:center;gap:10px;padding-top:10px;border-top:1px solid var(--parch);margin-top:4px;}
+.inv-total-row .inv-name{color:var(--mid);font-size:12px;}
+.inv-total-row .inv-amt{font-weight:500;}
+
+.balance-card{background:var(--esp);border-radius:8px;padding:20px 18px;color:var(--cream);display:flex;flex-direction:column;justify-content:space-between;}
+.balance-lbl{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.15em;text-transform:uppercase;color:rgba(245,240,232,.45);margin-bottom:6px;}
+.balance-val{font-family:'Playfair Display',serif;font-size:32px;font-weight:700;color:var(--cream);line-height:1;}
+.balance-sub{font-size:10.5px;color:rgba(245,240,232,.5);margin-top:4px;}
+.balance-rows{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+.bal-row{display:flex;justify-content:space-between;font-size:11px;color:rgba(245,240,232,.7);}
+.bal-row span:last-child{font-family:'DM Mono',monospace;font-size:10.5px;}
+.bal-row.in span:last-child{color:#9BC4A8;}
+.bal-row.out span:last-child{color:#E8825A;}
+
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="hdr">
+  <div><div class="logo"><img src="data:image/png;base64,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" alt="Pasta e Basta"></div><div class="hdr-sub">Miami &middot; Coconut Grove &middot; Pre-Opening Cost Tracker</div></div>
+  <div style="text-align:right;"><div class="as-of">As of</div><div class="datestamp">May 29, 2026</div></div>
+</header>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('summary',this)">Summary</button>
+  <button class="tab-btn" onclick="switchTab('detail',this)">Line Items</button>
+  <button class="tab-btn" onclick="switchTab('cash',this)">Cash Flow</button>
+</div>
+
+
+<div id="tab-summary" class="tab-pane active">
+<div class="kpi-strip">
+  <div class="kpi acc"><div class="kpi-l">Original Budget</div><div class="kpi-v">$495,019</div><div class="kpi-s">Incl. &minus;$50K TI credit</div></div>
+  <div class="kpi warn"><div class="kpi-l">New Estimate</div><div class="kpi-v">$552,433</div><div class="kpi-s">+$57,414 vs. budget (+11.6%)</div></div>
+  <div class="kpi good"><div class="kpi-l">Already Paid</div><div class="kpi-v">$80,464</div><div class="kpi-s">14.6% of total estimate</div></div>
+  <div class="kpi"><div class="kpi-l">Remaining</div><div class="kpi-v">$471,970</div><div class="kpi-s">Total estimate &minus; paid</div></div>
+</div>
+
+<div class="two-col">
+  <div class="card" style="overflow-y:auto;max-height:560px;">
+    <div class="card-t">Budget vs. Current Estimate &mdash; All Items</div>
+    <div class="chart-leg">
+      <div class="leg"><div class="lsw" style="height:5px;background:rgba(138,117,96,.28);"></div>Original budget</div>
+      <div class="leg"><div class="lsw" style="height:5px;background:var(--tc);"></div>New estimate (over budget)</div>
+      <div class="leg"><div class="lsw" style="height:5px;background:var(--sage);"></div>New estimate (under budget)</div>
+      <div class="leg"><div class="lsw" style="height:2px;background:var(--sage);margin-top:1px;"></div>% paid (thin line)</div>
+    </div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">GC Costs — Ceiling Installation & Materials</span><span class="bvc-amts"><span class="bvc-b">$60K</span><span class="bvc-e over">$140K ▲</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:42.9%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar over" style="width:100.0%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"></div><span class="bvc-plz">unpaid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">3 months rent</span><span class="bvc-amts"><span class="bvc-b">$73K</span><span class="bvc-e under">$48K ▼</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:51.8%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar under" style="width:34.5%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"><div class="bvc-pf" style="width:100%"></div></div><span class="bvc-pl">100% paid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Faux Wood Ceiling Beams</span><span class="bvc-amts"><span class="bvc-b">$20K</span><span class="bvc-e under">$15K ▼</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:14.4%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar under" style="width:10.9%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"></div><span class="bvc-plz">unpaid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">AC Fixing / Replacement</span><span class="bvc-amts"><span class="bvc-b">$0</span><span class="bvc-e over">$12K ▲</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:0%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar over" style="width:8.8%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"></div><span class="bvc-plz">unpaid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Limewash Painting</span><span class="bvc-amts"><span class="bvc-b">$12K</span><span class="bvc-e under">$10K ▼</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:8.6%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar under" style="width:7.5%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"></div><span class="bvc-plz">unpaid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Flooring</span><span class="bvc-amts"><span class="bvc-b">$10K</span><span class="bvc-e same">$10K</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:7.1%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar same" style="width:7.1%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"><div class="bvc-pf" style="width:50%"></div></div><span class="bvc-pl">50% paid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Designer Fee</span><span class="bvc-amts"><span class="bvc-b">$25K</span><span class="bvc-e under">$9.9K ▼</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:17.7%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar under" style="width:7.1%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"><div class="bvc-pf" style="width:33%"></div></div><span class="bvc-pl">33% paid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Architect and Engineer Fees</span><span class="bvc-amts"><span class="bvc-b">$0</span><span class="bvc-e over">$6.5K ▲</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:0%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar over" style="width:4.6%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"><div class="bvc-pf" style="width:100%"></div></div><span class="bvc-pl">100% paid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Electricity/FPL</span><span class="bvc-amts"><span class="bvc-b">$0</span><span class="bvc-e over">$1.9K ▲</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:0%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar over" style="width:1.3%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"><div class="bvc-pf" style="width:100%"></div></div><span class="bvc-pl">100% paid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Hand and Commercial Sink</span><span class="bvc-amts"><span class="bvc-b">$0</span><span class="bvc-e over">$1.3K ▲</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:0%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar over" style="width:0.9%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"><div class="bvc-pf" style="width:100%"></div></div><span class="bvc-pl">100% paid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Hood Cleaning</span><span class="bvc-amts"><span class="bvc-b">$0</span><span class="bvc-e over">$500 ▲</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:0%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar over" style="width:0.4%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"><div class="bvc-pf" style="width:100%"></div></div><span class="bvc-pl">100% paid</span></div></div>
+<div class="bvc-row"><div class="bvc-hdr"><span class="bvc-nm">Grease Trap Inspection</span><span class="bvc-amts"><span class="bvc-b">$0</span><span class="bvc-e over">$495 ▲</span></span></div><div class="bvc-tracks"><div class="bvc-track"><div class="bvc-fill budget-bar" style="width:0%"></div></div><div class="bvc-track"><div class="bvc-fill est-bar over" style="width:0.4%"></div></div></div><div class="bvc-pr"><div class="bvc-pt"><div class="bvc-pf" style="width:100%"></div></div><span class="bvc-pl">100% paid</span></div></div>
+    </div>
+  </div>
+  <div class="card" style="display:flex;flex-direction:column;">
+    <div class="card-t">Payment Status</div>
+    <div class="ring-wrap">
+      <div class="ring-chart">
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle cx="65" cy="65" r="50" fill="none" stroke="#EDE5D4" stroke-width="13"/>
+          <circle cx="65" cy="65" r="50" fill="none" stroke="#7A8C6E" stroke-width="13"
+            stroke-dasharray="45.8 268.2" stroke-dashoffset="0"/>
+        </svg>
+        <div class="ring-ctr"><div class="ring-pct">14.6%</div><div class="ring-lbl">Paid</div></div>
+      </div>
+      <div class="rleg">
+        <div class="rleg-row"><div class="rdot" style="background:var(--sage)"></div><span>Paid to date</span><span class="rval">$80,464</span></div>
+        <div class="rleg-row"><div class="rdot" style="background:var(--parch);border:1px solid var(--bdr)"></div><span>Outstanding</span><span class="rval">$471,970</span></div>
+        <div class="rleg-row" style="padding-top:7px;border-top:1px solid var(--parch);font-size:10.5px;color:var(--mid);">
+          <div class="rdot" style="background:var(--gold)"></div><span>TI Credit (in both cols)</span><span class="rval">&minus;$50,000</span>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--parch);padding-top:11px;display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;">
+      <div><div style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:var(--mid);margin-bottom:2px;">Largest paid</div><div style="font-size:11px;color:var(--ink);">3 Months Rent</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--tc);">$48,333</div></div>
+      <div><div style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:var(--mid);margin-bottom:2px;">Largest outstanding</div><div style="font-size:11px;color:var(--ink);">GC &mdash; Ceiling</div><div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--tc);">$140,000</div></div>
+    </div>
+    <div style="background:var(--parch);border-radius:5px;padding:10px 12px;flex:1;">
+      <div style="font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:var(--mid);margin-bottom:6px;">Fully paid items</div>
+      <div style="display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span>3 Months Rent</span><span style="font-family:'DM Mono',monospace;font-size:10px;">$48,333</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span>Architect &amp; Engineer Fees</span><span style="font-family:'DM Mono',monospace;font-size:10px;">$6,500</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span>Electricity / FPL</span><span style="font-family:'DM Mono',monospace;font-size:10px;">$1,873</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span>Hand &amp; Commercial Sink</span><span style="font-family:'DM Mono',monospace;font-size:10px;">$1,328</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span>Hood Cleaning</span><span style="font-family:'DM Mono',monospace;font-size:10px;">$500</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:10.5px;"><span>Grease Trap Inspection</span><span style="font-family:'DM Mono',monospace;font-size:10px;">$495</span></div>
+      </div>
+    </div>
+  </div>
+
+<div class="sec">Full Budget Breakdown</div>
+<p class="hint">Click any row to jump to its detailed line items in the <strong>Line Items</strong> tab.</p>
+<div class="tcard"><table>
+<thead><tr><th>Category</th><th class="num">Budgeted Cost</th><th class="num">New Estimated Cost</th><th class="num">Difference</th><th class="num">Already Paid</th><th class="num">Remaining Payment</th><th class="num">% Paid</th></tr></thead>
+<tbody>
+<tr class="row-over" onclick="selectCat('GC Costs — Ceiling Installation &amp; Materials')"><td class="cc">GC Costs — Ceiling Installation & Materials <span class="badge bover">+133%</span></td><td class="num">$60,000</td><td class="num">$140,000</td><td class="num dp">+$80,000</td><td class="num">—</td><td class="num">$140,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Interior')"><td class="cc">Interior </td><td class="num">$35,938.80</td><td class="num">$35,938.80</td><td class="num ">—</td><td class="num">—</td><td class="num">$35,938.80</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Dining Chairs')"><td class="cc">Dining Chairs </td><td class="num">$32,064</td><td class="num">$32,064</td><td class="num ">—</td><td class="num">—</td><td class="num">$32,064</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Insurance')"><td class="cc">Insurance <span class="badge bpart">Partial</span></td><td class="num">$30,000</td><td class="num">$30,000</td><td class="num ">—</td><td class="num">$1,383.14</td><td class="num">$28,616.86</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:5%"></div></div><span class="pill-pct">5%</span></div></td></tr>
+<tr class="" onclick="selectCat('Legal expenses')"><td class="cc">Legal expenses <span class="badge bpart">Partial</span></td><td class="num">$25,000</td><td class="num">$25,000</td><td class="num ">—</td><td class="num">$11,751.45</td><td class="num">$13,248.55</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:47%"></div></div><span class="pill-pct">47%</span></div></td></tr>
+<tr class="" onclick="selectCat('Designer Fee')"><td class="cc">Designer Fee <span class="badge bpart">Partial</span></td><td class="num">$24,796.80</td><td class="num">$9,900</td><td class="num dn">($14,896.80)</td><td class="num">$3,300</td><td class="num">$6,600</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:33%"></div></div><span class="pill-pct">33%</span></div></td></tr>
+<tr class="" onclick="selectCat('Custom Pasta Bar, Working Surface and Shelves')"><td class="cc">Custom Pasta Bar, Working Surface and Shelves </td><td class="num">$20,731.20</td><td class="num">$20,731.20</td><td class="num ">—</td><td class="num">—</td><td class="num">$20,731.20</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Faux Wood Ceiling Beams')"><td class="cc">Faux Wood Ceiling Beams </td><td class="num">$20,219.35</td><td class="num">$15,197.62</td><td class="num dn">($5,021.73)</td><td class="num">—</td><td class="num">$15,197.62</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Trainings, salaries, friends &amp; family, launch event')"><td class="cc">Trainings, salaries, friends & family, launch event </td><td class="num">$18,000</td><td class="num">$18,000</td><td class="num ">—</td><td class="num">—</td><td class="num">$18,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('OS&amp;E')"><td class="cc">OS&E </td><td class="num">$17,492.90</td><td class="num">$17,492.90</td><td class="num ">—</td><td class="num">—</td><td class="num">$17,492.90</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Beverage beginning inventory')"><td class="cc">Beverage beginning inventory </td><td class="num">$15,000</td><td class="num">$15,000</td><td class="num ">—</td><td class="num">—</td><td class="num">$15,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Food beginning inventory')"><td class="cc">Food beginning inventory </td><td class="num">$15,000</td><td class="num">$15,000</td><td class="num ">—</td><td class="num">—</td><td class="num">$15,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Limewash Painting')"><td class="cc">Limewash Painting </td><td class="num">$12,000</td><td class="num">$10,500</td><td class="num dn">($1,500.00)</td><td class="num">—</td><td class="num">$10,500</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('IT')"><td class="cc">IT </td><td class="num">$11,000</td><td class="num">$11,000</td><td class="num ">—</td><td class="num">—</td><td class="num">$11,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Dining Tables')"><td class="cc">Dining Tables </td><td class="num">$10,255.44</td><td class="num">$10,255.44</td><td class="num ">—</td><td class="num">—</td><td class="num">$10,255.44</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Flooring')"><td class="cc">Flooring <span class="badge bpart">Partial</span></td><td class="num">$10,000</td><td class="num">$10,000</td><td class="num ">—</td><td class="num">$5,000</td><td class="num">$5,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:50%"></div></div><span class="pill-pct">50%</span></div></td></tr>
+<tr class="" onclick="selectCat('Interior Arch — Drywall')"><td class="cc">Interior Arch — Drywall </td><td class="num">$10,000</td><td class="num">$10,000</td><td class="num ">—</td><td class="num">—</td><td class="num">$10,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Art')"><td class="cc">Art </td><td class="num">$8,734.80</td><td class="num">$8,734.80</td><td class="num ">—</td><td class="num">—</td><td class="num">$8,734.80</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Lights')"><td class="cc">Lights </td><td class="num">$8,424</td><td class="num">$8,424</td><td class="num ">—</td><td class="num">—</td><td class="num">$8,424</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Shipping costs')"><td class="cc">Shipping costs </td><td class="num">$8,275.20</td><td class="num">$8,275.20</td><td class="num ">—</td><td class="num">—</td><td class="num">$8,275.20</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Coffee Machine')"><td class="cc">Coffee Machine </td><td class="num">$6,400</td><td class="num">$6,400</td><td class="num ">—</td><td class="num">—</td><td class="num">$6,400</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Missing Kitchen Appliances')"><td class="cc">Missing Kitchen Appliances </td><td class="num">$5,000</td><td class="num">$5,000</td><td class="num ">—</td><td class="num">—</td><td class="num">$5,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Window treatment')"><td class="cc">Window treatment </td><td class="num">$4,800</td><td class="num">$4,800</td><td class="num ">—</td><td class="num">—</td><td class="num">$4,800</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Bathroom')"><td class="cc">Bathroom </td><td class="num">$3,817.01</td><td class="num">$3,817.01</td><td class="num ">—</td><td class="num">—</td><td class="num">$3,817.01</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Bar Stools')"><td class="cc">Bar Stools </td><td class="num">$3,000</td><td class="num">$3,000</td><td class="num ">—</td><td class="num">—</td><td class="num">$3,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Plants and Planters')"><td class="cc">Plants and Planters </td><td class="num">$2,495.76</td><td class="num">$2,495.76</td><td class="num ">—</td><td class="num">—</td><td class="num">$2,495.76</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Vases/Lamps/Misc Decorations')"><td class="cc">Vases/Lamps/Misc Decorations </td><td class="num">$2,092.80</td><td class="num">$2,092.80</td><td class="num ">—</td><td class="num">—</td><td class="num">$2,092.80</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Bar retouching')"><td class="cc">Bar retouching </td><td class="num">$1,238.40</td><td class="num">$1,238.40</td><td class="num ">—</td><td class="num">—</td><td class="num">$1,238.40</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('Restrooms')"><td class="cc">Restrooms </td><td class="num">$741.46</td><td class="num">$741.46</td><td class="num ">—</td><td class="num">—</td><td class="num">$741.46</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="" onclick="selectCat('3 months rent')"><td class="cc">3 months rent <span class="badge bpaid">Fully paid</span></td><td class="num">$72,501</td><td class="num">$48,333.34</td><td class="num dn">($24,167.66)</td><td class="num">$48,333.34</td><td class="num">—</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:100%"></div></div><span class="pill-pct">100%</span></div></td></tr>
+<tr class="" onclick="selectCat('Buffer')"><td class="cc">Buffer </td><td class="num">$50,000</td><td class="num">$50,000</td><td class="num ">—</td><td class="num">—</td><td class="num">$50,000</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="row-new" onclick="selectCat('Architect and Engineer Fees')"><td class="cc">Architect and Engineer Fees <span class="badge bnew">Not in original budget</span><span class="badge bpaid">Fully paid</span></td><td class="num">—</td><td class="num">$6,500</td><td class="num dp">+$6,500</td><td class="num">$6,500</td><td class="num">—</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:100%"></div></div><span class="pill-pct">100%</span></div></td></tr>
+<tr class="row-new" onclick="selectCat('AC Fixing / Replacement')"><td class="cc">AC Fixing / Replacement <span class="badge bnew">Not in original budget</span></td><td class="num">—</td><td class="num">$12,305</td><td class="num dp">+$12,305</td><td class="num">—</td><td class="num">$12,305</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="row-new" onclick="selectCat('Electricity/FPL')"><td class="cc">Electricity/FPL <span class="badge bnew">Not in original budget</span><span class="badge bpaid">Fully paid</span></td><td class="num">—</td><td class="num">$1,873</td><td class="num dp">+$1,873</td><td class="num">$1,873</td><td class="num">—</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:100%"></div></div><span class="pill-pct">100%</span></div></td></tr>
+<tr class="row-new" onclick="selectCat('Hand and Commercial Sink')"><td class="cc">Hand and Commercial Sink <span class="badge bnew">Not in original budget</span><span class="badge bpaid">Fully paid</span></td><td class="num">—</td><td class="num">$1,327.61</td><td class="num dp">+$1,327.61</td><td class="num">$1,327.61</td><td class="num">—</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:100%"></div></div><span class="pill-pct">100%</span></div></td></tr>
+<tr class="row-new" onclick="selectCat('Hood Cleaning')"><td class="cc">Hood Cleaning <span class="badge bnew">Not in original budget</span><span class="badge bpaid">Fully paid</span></td><td class="num">—</td><td class="num">$500</td><td class="num dp">+$500</td><td class="num">$500</td><td class="num">—</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:100%"></div></div><span class="pill-pct">100%</span></div></td></tr>
+<tr class="row-new" onclick="selectCat('Grease Trap Inspection')"><td class="cc">Grease Trap Inspection <span class="badge bnew">Not in original budget</span><span class="badge bpaid">Fully paid</span></td><td class="num">—</td><td class="num">$495</td><td class="num dp">+$495</td><td class="num">$495</td><td class="num">—</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:100%"></div></div><span class="pill-pct">100%</span></div></td></tr>
+<tr class="row-ti" onclick="selectCat('TI from Terra')"><td class="cc">TI from Terra </td><td class="num">($50,000.00)</td><td class="num">($50,000.00)</td><td class="num ">—</td><td class="num">—</td><td class="num">($50,000.00)</td><td class="num"><div class="pill-wrap"><div class="pill-track"><div class="pill-fill" style="width:0%"></div></div><span class="pill-pct">0%</span></div></td></tr>
+<tr class="total-row"><td><strong>Total</strong></td><td class="num"><strong>$495,019</strong></td><td class="num"><strong>$552,433</strong></td><td class="num" style="color:#E8825A;"><strong>+$57,414</strong></td><td class="num"><strong>$80,464</strong></td><td class="num"><strong>$471,970</strong></td><td class="num"><strong>14.6%</strong></td></tr>
+</tbody></table></div>
+</div><!-- /tab-summary -->
+
+<div id="tab-detail" class="tab-pane">
+<div class="detail-layout">
+    <div class="cat-list">
+      <div class="cat-list-hdr">Categories</div>
+      <div id="catListInner"></div>
+    </div>
+    <div class="detail-pane" id="detailPane">
+      <div class="detail-empty">&larr; Select a category to see its line items</div>
+    </div>
+  </div>
+</div><!-- /tab-detail -->
+<div id="tab-cash" class="tab-pane">
+<!-- Cash KPIs -->
+  <div class="cash-kpi-strip">
+    <div class="kpi good">
+      <div class="kpi-l">Total Received</div>
+      <div class="kpi-v">$111,000</div>
+      <div class="kpi-s">From all partners</div>
+    </div>
+    <div class="kpi warn">
+      <div class="kpi-l">Total Spent</div>
+      <div class="kpi-v">$80,464</div>
+      <div class="kpi-s">All outbound payments</div>
+    </div>
+    <div class="kpi acc">
+      <div class="kpi-l">Current Balance</div>
+      <div class="kpi-v">$30,536.45</div>
+      <div class="kpi-s">Chase account as of May 29</div>
+    </div>
+  </div>
+
+  <div class="cash-layout">
+
+    <!-- Payments out -->
+    <div>
+      <div class="sec" style="font-size:16px;">Payments Out</div>
+      <div class="cash-tcard">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>Description</th><th class="num">Amount</th><th>Status</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>May 27, 2026</td><td>Architect — Miguel (M Square), plans + engineering</td><td class="num red">$3,250.00</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>May 22, 2026</td><td>Lawyer fee — Ian, Callista review</td><td class="num red">$1,363.95</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>May 22, 2026</td><td>Lawyer fee — Ian, lease negotiation</td><td class="num red">$6,961.95</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>May 20, 2026</td><td>City of Miami — upfront dry run fee (permits)</td><td class="num red">$492.80</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>May 15, 2026</td><td>Permit expediter — Fritzgerald Masson</td><td class="num red">$2,500.00</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>May 15, 2026</td><td>Hand and commercial sink — Diego M</td><td class="num red">$1,327.61</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>May 15, 2026</td><td>FPL deposit</td><td class="num red">$1,873.01</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>May 13, 2026</td><td>Designer fee — Atelier 7 (1 of 3)</td><td class="num red">$3,300.00</td><td><span class="badge bpart">No, first of 3</span></td></tr>
+<tr><td>May 05, 2026</td><td>Insurance (buildup phase)</td><td class="num red">$408.04</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>May 01, 2026</td><td>Insurance (buildup phase)</td><td class="num red">$975.10</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>Apr 21, 2026</td><td>Deposit + prepaid rent — Terra 2850 Mary Venture</td><td class="num red">$48,333.34</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>Apr 16, 2026</td><td>City of Miami — request of plans</td><td class="num red">$44.00</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>Apr 15, 2026</td><td>Hood cleaning — SERVIDUMPSTER INC</td><td class="num red">$500.00</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>Apr 15, 2026</td><td>Epoxy — Daniel Bowman (1 of 2)</td><td class="num red">$2,000.00</td><td><span class="badge bpart">No</span></td></tr>
+<tr><td>Apr 10, 2026</td><td>Epoxy — Daniel Bowman (2 of 2)</td><td class="num red">$3,000.00</td><td><span class="badge bpart">No</span></td></tr>
+<tr><td>Apr 09, 2026</td><td>Lawyer fee — Silvestri, company setup</td><td class="num red">$388.75</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>Apr 02, 2026</td><td>Grease trap inspection</td><td class="num red">$495.00</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+<tr><td>Mar 18, 2026</td><td>Architect — Miguel (M Square), plans + engineering</td><td class="num red">$3,250.00</td><td><span class="badge bpaid">Fully paid</span></td></tr>
+
+            <tr class="total-row">
+              <td colspan="2"><strong>Total paid out</strong></td>
+              <td class="num"><strong>$80,463.55</strong></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Money in + balance -->
+    <div>
+      <div class="sec" style="font-size:16px;">Money Received</div>
+
+      <!-- investor contribution bars -->
+      <div class="inv-summary-card" style="margin-bottom:16px;">
+        <div class="card-t">Contributions by Partner</div>
+        <div class="inv-row-item">
+  <div class="inv-name">Nico</div>
+  <div class="inv-bar-wrap">
+    <div class="inv-bar-fill" style="width:3%;background:#C4622D;"></div>
+  </div>
+  <div class="inv-amt">$3,000</div>
+  <div class="inv-pct">3%</div>
+</div>
+<div class="inv-row-item">
+  <div class="inv-name">Ale</div>
+  <div class="inv-bar-wrap">
+    <div class="inv-bar-fill" style="width:26%;background:#B8882A;"></div>
+  </div>
+  <div class="inv-amt">$29,000</div>
+  <div class="inv-pct">26%</div>
+</div>
+<div class="inv-row-item">
+  <div class="inv-name">Gian</div>
+  <div class="inv-bar-wrap">
+    <div class="inv-bar-fill" style="width:26%;background:#7A8C6E;"></div>
+  </div>
+  <div class="inv-amt">$29,000</div>
+  <div class="inv-pct">26%</div>
+</div>
+<div class="inv-row-item">
+  <div class="inv-name">Diego</div>
+  <div class="inv-bar-wrap">
+    <div class="inv-bar-fill" style="width:45%;background:#8A7560;"></div>
+  </div>
+  <div class="inv-amt">$50,000</div>
+  <div class="inv-pct">45%</div>
+</div>
+<div class="inv-row-item">
+  <div class="inv-name">Other</div>
+  <div class="inv-bar-wrap">
+    <div class="inv-bar-fill" style="width:0%;background:#D4DDD0;"></div>
+  </div>
+  <div class="inv-amt">$0</div>
+  <div class="inv-pct">0%</div>
+</div>
+
+        <div class="inv-total-row">
+          <div class="inv-name" style="color:var(--mid);font-size:12px;">Total</div>
+          <div></div>
+          <div class="inv-amt" style="font-weight:500;">$111,000</div>
+          <div class="inv-pct">100%</div>
+        </div>
+      </div>
+
+      <!-- transaction log -->
+      <div class="cash-tcard">
+        <table>
+          <thead><tr>
+            <th>Date</th><th>From</th><th class="num">Amount</th>
+          </tr></thead>
+          <tbody>
+            <tr><td>Apr 28, 2026</td><td>Gian</td><td class="num grn">$500.00</td></tr>
+<tr><td>Apr 27, 2026</td><td>Gian</td><td class="num grn">$500.00</td></tr>
+<tr><td>Apr 27, 2026</td><td>Diego (Deux Ex Machina LLC — Investment Round 1)</td><td class="num grn">$50,000.00</td></tr>
+<tr><td>Apr 20, 2026</td><td>Ale</td><td class="num grn">$1,100.00</td></tr>
+<tr><td>Apr 20, 2026</td><td>Gian</td><td class="num grn">$25,000.00</td></tr>
+<tr><td>Apr 13, 2026</td><td>Ale</td><td class="num grn">$24,900.00</td></tr>
+<tr><td>Mar 18, 2026</td><td>Ale</td><td class="num grn">$3,000.00</td></tr>
+<tr><td>Mar 17, 2026</td><td>Gian</td><td class="num grn">$3,000.00</td></tr>
+<tr><td>Mar 16, 2026</td><td>Nico</td><td class="num grn">$3,000.00</td></tr>
+
+            <tr class="total-row">
+              <td colspan="2"><strong>Total received</strong></td>
+              <td class="num"><strong>$111,000.00</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- balance card -->
+      <div class="balance-card">
+        <div>
+          <div class="balance-lbl">Current account balance</div>
+          <div class="balance-val">$30,536.45</div>
+          <div class="balance-sub">Chase account · as of May 29, 2026</div>
+        </div>
+        <div class="balance-rows">
+          <div class="bal-row in"><span>Total received</span><span>+$111,000.00</span></div>
+          <div class="bal-row out"><span>Total spent</span><span>−$80,463.55</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div><!-- /tab-cash -->
+</div>
+
+<div class="footer"><div class="fl">Pasta e Basta II LLC &mdash; Miami, FL</div><div class="fr">Confidential &middot; Partners Only &middot; May 2026</div></div>
+
+
+<script>
+
+// Always start on Summary tab, scrolled to top
+window.addEventListener('load', function() {
+  window.scrollTo(0, 0);
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-summary').classList.add('active');
+  document.querySelector('.tab-btn').classList.add('active');
+});
+
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+const DETAIL_DATA = {"GC Costs — Ceiling Installation & Materials": [["Ceiling installation, drop tiles, painting, 13 columns", "Limewash Miami", "N/A", "N/A", "$60,000", "Original scope"], ["Additional GC scope (overrun)", "TBD", "—", "—", "$80,000", "⚠️ Needs clarification from Diego / GC"]], "Interior": [["Custom slipped covered dining bench", "Atelier 7", "$4,781", "4", "$22,949", ""], ["Fire treatment for benches", "Atelier 7", "N/A", "N/A", "$2,400", ""], ["Gils upholstery installation & delivery", "Atelier 7", "N/A", "N/A", "$2,400", "Could be more"], ["Dining table (×25)", "Atelier 7", "$273", "25", "$8,190", ""]], "Dining Chairs": [["Custom Dining Chair", "Atelier 7", "$668", "40", "$32,064", ""]], "Insurance": [["General Liability + Payroll Insurance", "TBD", "N/A", "N/A", "$30,000", "Da verificare — $1,383 paid so far"]], "Legal expenses": [["Lease negotiation fee", "Ian (lawyer)", "—", "—", "$6,962", "Paid"], ["Callista review", "Ian (lawyer)", "—", "—", "$1,364", "Paid"], ["Company setup fee", "Silvestri (lawyer)", "—", "—", "$389", "Paid"], ["Permit expediter", "Fritzgerald Masson", "—", "—", "$2,500", "Paid"], ["Dry run fee (permits)", "City of Miami", "—", "—", "$493", "Paid"], ["Request of plans", "City of Miami", "—", "—", "$44", "Paid"], ["Remaining permits / LLC amendments", "TBD", "—", "—", "~$13,249", "Estimated remaining"]], "Designer Fee": [["Designer procurement fee (original)", "Atelier 7", "N/A", "N/A", "$6,000", "Renegotiated"], ["Interior design concept + retainer (original)", "Atelier 7", "N/A", "N/A", "$10,973", "Renegotiated"], ["Furniture procurement fee (original)", "Atelier 7", "N/A", "N/A", "$6,000", "Renegotiated"], ["Interior renders (original)", "Atelier 7", "N/A", "N/A", "$1,824", "Renegotiated"], ["TOTAL — renegotiated to 3 x $3,300", "Atelier 7", "—", "3 pmts", "$9,900", "1 of 3 paid"]], "Custom Pasta Bar, Working Surface and Shelves": [["Custom Pasta Bar", "Atelier 7", "$10,752", "1", "$12,902", "$20K budget for whole bar"], ["Custom Working Surface", "Atelier 7", "$2,912", "2", "$6,989", ""], ["Millwork Delivery", "Atelier 7", "$700", "1", "$840", ""], ["Bar Shelves / Millwork", "TBD", "—", "—", "incl.", "Now included in this line item"]], "Faux Wood Ceiling Beams": [["Faux Wood Ceiling Beams", "Atelier 7", "$8,425", "2", "$15,198", "Extra beams already in storage"]], "Trainings, salaries, friends & family, launch event": [["Manager salary (2 weeks)", "TBD", "—", "—", "incl.", ""], ["Chef salary (2 weeks)", "TBD", "—", "—", "incl.", ""], ["FOH — 6 staff @ $13/hr x 40hrs", "TBD", "$13/hr", "6 x 40h", "incl.", ""], ["BOH — 4 staff @ $20/hr x 40hrs", "TBD", "$20/hr", "4 x 40h", "incl.", ""], ["Friends & family dinner + launch event", "TBD", "—", "—", "incl.", ""], ["TOTAL pre-opening", "—", "—", "—", "$18,000", ""]], "OS&E": [["Forks", "—", "$46.49", "10 units", "$465", "12 each unit"], ["Knives", "—", "—", "—", "$490", ""], ["Spoons", "—", "—", "—", "$160", ""], ["Coffee spoons", "—", "—", "—", "$138", ""], ["Sharing plates", "—", "—", "—", "$410", ""], ["B&B plates", "—", "—", "—", "$495", ""], ["Water glasses", "—", "—", "—", "$240", ""], ["Wine glasses", "—", "—", "—", "$315", ""], ["Champagne flutes", "—", "—", "—", "$244", ""], ["Espresso cups", "—", "—", "—", "$240", ""], ["Cappuccino cups", "—", "—", "—", "$240", ""], ["Decanter", "—", "—", "—", "$60", ""], ["Olive cruet", "—", "—", "—", "$156", ""], ["Ice buckets", "—", "—", "—", "$200", ""], ["Collins glasses", "—", "—", "—", "$88", ""], ["Water pitchers", "—", "—", "—", "$126", ""], ["Drink trays", "—", "—", "—", "$250", ""], ["Bread baskets", "—", "—", "—", "$396", ""], ["Bruch plate", "—", "—", "—", "$260", ""], ["Bruch tower", "—", "—", "—", "$420", ""], ["Check presenters", "—", "—", "—", "$500", ""], ["Food menus", "—", "—", "—", "$800", ""], ["Wine menus", "—", "—", "—", "$800", ""], ["Kitchen utensils", "—", "—", "—", "$10,000", ""]], "Beverage beginning inventory": [["Beverage beginning inventory", "TBD", "N/A", "N/A", "$15,000", "Operating supplies estimate"]], "Food beginning inventory": [["Food beginning inventory", "TBD", "N/A", "N/A", "$15,000", "~50% of current inventory. To verify with chef."]], "Limewash Painting": [["Pressure cleaning & hand-painted limewash, interiors & exteriors", "Limewash Miami", "N/A", "N/A", "$10,500", ""]], "IT": [["IV Room, Music, centralized system, rack, alarm, Wi-Fi", "Anthony Tech", "—", "—", "$6,000", "To verify rack setup"], ["Toast POS", "Toast", "—", "—", "$5,000", ""]], "Dining Tables": [["Round Dining Table", "Atelier 7", "$588", "2", "$1,410", ""], ["Dining Table", "Atelier 7", "$273", "25", "$8,190", ""], ["Table top fasteners", "Atelier 7", "$42", "13", "$655", ""]], "Flooring": [["Revestimiento Microcemento", "Studiocement", "N/A", "N/A", "$10,000", "50% paid"]], "Interior Arch — Drywall": [["Interior Arch — Drywall", "TBD", "N/A", "N/A", "$10,000", "Da verificare con architetto e designer"]], "Art": [["Art and art lighting", "Atelier 7", "—", "—", "$3,210", ""], ["Picture frames + battery picture lights", "Atelier 7", "—", "—", "$768", ""], ["Art: Girl eating spaghetti", "Atelier 7", "$193", "1", "$232", ""], ["Art: Abstract series", "Atelier 7", "$600", "4", "$2,880", ""], ["Framed photography (Capri, Sophia Loren, pasta series, etc.)", "Atelier 7", "—", "various", "$1,645", ""]], "Lights": [["Dining Area Pendant Lights", "Atelier 7", "$390", "18", "$8,424", ""]], "Shipping costs": [["All Atelier 7 shipments — furniture, decor, art (consolidated)", "Atelier 7", "—", "—", "$8,275", ""]], "Coffee Machine": [["Astoria Pratic Avant Xtra SAE 2", "—", "$5,000", "1", "$6,400", ""]], "Missing Kitchen Appliances": [["Pasta boiler, plates, pots (excl. pasta extruder)", "TBD", "N/A", "N/A", "$5,000", "To verify with chef"]], "Window treatment": [["Custom Window Treatment", "Atelier 7", "$2,000", "2", "$4,800", "Forse per schiarire i vetri"]], "Bathroom": [["Custom Stone Sink", "Atelier 7", "$600", "2", "$1,440", ""], ["Wall Mounted Faucet", "Atelier 7", "$279", "2", "$671", ""], ["Pop Up Sink Drain", "Atelier 7", "$80", "2", "$192", ""], ["P-trap", "Atelier 7", "$90", "2", "$216", ""], ["Vintage Rounded Rectangular Mirror", "Atelier 7", "$349", "2", "$838", ""], ["Bathroom Door Knob", "Atelier 7", "$192", "2", "$461", ""]], "Bar Stools": [["Custom Bar Stools", "—", "$250", "12", "$3,000", ""]], "Plants and Planters": [["Entry Planters", "Atelier 7", "$278", "3", "$1,500", "Budget decision mia"], ["Real Olive Tree — Entry Planters", "Atelier 7", "$172", "3", "$618", ""], ["Large Indoor Planter", "Atelier 7", "$315", "1", "$378", ""]], "Vases/Lamps/Misc Decorations": [["Battery Operated Table Lamps", "Atelier 7", "$30", "25", "$750", "Need to confirm with rendering"], ["Vases/Lamps/Misc (consolidated)", "Atelier 7", "—", "—", "$300", ""], ["Decorative Arched Floor Mirror", "Atelier 7", "$257", "1", "$308", ""], ["Battery Operated Sconces", "Atelier 7", "$49", "1", "$59", ""], ["Sunbrella Total Cleaning Kit", "Atelier 7", "$68", "1", "$82", ""], ["Sika — Matte Sealer", "Atelier 7", "$495", "1", "$594", ""]], "Bar retouching": [["Bar Pendants", "Atelier 7", "$172", "6", "$1,238", ""]], "Restrooms": [["Toilet paper holder", "Atelier 7", "$52", "2", "$125", ""], ["Bag / towel hook", "Atelier 7", "$40", "2", "$96", ""], ["Hand soap / lotion wall mounted dispenser", "Atelier 7", "$25", "2", "$60", ""], ["Paper towel holder", "Atelier 7", "$42", "2", "$101", ""], ["Basket / trash can", "Atelier 7", "$40", "2", "$96", ""], ["Restroom Sign", "Atelier 7", "$110", "2", "$264", ""]], "3 months rent": [["Deposit + 1st month prepaid — wired to Terra 2850 Mary Venture Partnership", "Terra", "—", "—", "$48,333", "Wired 4/21/26. Fully paid."]], "Buffer": [["Working capital reserve", "—", "—", "—", "$50,000", "Not yet deployed"]], "Architect and Engineer Fees": [["Architectural designs + engineering (1 of 2)", "M Square Architects", "—", "—", "$3,250", "Paid"], ["Architectural designs + engineering (2 of 2)", "M Square Architects", "—", "—", "$3,250", "Paid"]], "AC Fixing / Replacement": [["AC Fixing / Replacement", "TBD", "—", "—", "$12,305", "Not in original budget. Unpaid."]], "Electricity/FPL": [["FPL deposit", "FPL", "—", "—", "$1,873", "Paid 5/15. Fully paid."]], "Hand and Commercial Sink": [["Hand and commercial sink", "Diego M (Zelle)", "—", "—", "$1,328", "Fully paid."]], "Hood Cleaning": [["Hood cleaning", "SERVIDUMPSTER INC", "—", "—", "$500", "Fully paid."]], "Grease Trap Inspection": [["Grease trap inspection", "E.R. Pumping Service Co.", "—", "—", "$495", "Paid 4/2. Fully paid."]], "TI from Terra": [["Tenant Improvement credit from landlord", "Terra 2850 Mary Venture Partnership", "—", "—", "($50,000)", "Deducted from both budget and estimate"]]};
+const ITEMS_META = [{"name": "GC Costs — Ceiling Installation & Materials", "budget": 60000, "estimate": 140000, "paid": 0, "cls": "overrun"}, {"name": "Interior", "budget": 35938.8, "estimate": 35938.8, "paid": 0, "cls": ""}, {"name": "Dining Chairs", "budget": 32064, "estimate": 32064, "paid": 0, "cls": ""}, {"name": "Insurance", "budget": 30000, "estimate": 30000, "paid": 1383.14, "cls": ""}, {"name": "Legal expenses", "budget": 25000, "estimate": 25000, "paid": 11751.45, "cls": ""}, {"name": "Designer Fee", "budget": 24796.8, "estimate": 9900, "paid": 3300, "cls": ""}, {"name": "Custom Pasta Bar, Working Surface and Shelves", "budget": 20731.2, "estimate": 20731.2, "paid": 0, "cls": ""}, {"name": "Faux Wood Ceiling Beams", "budget": 20219.35, "estimate": 15197.62, "paid": 0, "cls": ""}, {"name": "Trainings, salaries, friends & family, launch event", "budget": 18000, "estimate": 18000, "paid": 0, "cls": ""}, {"name": "OS&E", "budget": 17492.9, "estimate": 17492.9, "paid": 0, "cls": ""}, {"name": "Beverage beginning inventory", "budget": 15000, "estimate": 15000, "paid": 0, "cls": ""}, {"name": "Food beginning inventory", "budget": 15000, "estimate": 15000, "paid": 0, "cls": ""}, {"name": "Limewash Painting", "budget": 12000, "estimate": 10500, "paid": 0, "cls": ""}, {"name": "IT", "budget": 11000, "estimate": 11000, "paid": 0, "cls": ""}, {"name": "Dining Tables", "budget": 10255.44, "estimate": 10255.44, "paid": 0, "cls": ""}, {"name": "Flooring", "budget": 10000, "estimate": 10000, "paid": 5000, "cls": ""}, {"name": "Interior Arch — Drywall", "budget": 10000, "estimate": 10000, "paid": 0, "cls": ""}, {"name": "Art", "budget": 8734.8, "estimate": 8734.8, "paid": 0, "cls": ""}, {"name": "Lights", "budget": 8424, "estimate": 8424, "paid": 0, "cls": ""}, {"name": "Shipping costs", "budget": 8275.2, "estimate": 8275.2, "paid": 0, "cls": ""}, {"name": "Coffee Machine", "budget": 6400, "estimate": 6400, "paid": 0, "cls": ""}, {"name": "Missing Kitchen Appliances", "budget": 5000, "estimate": 5000, "paid": 0, "cls": ""}, {"name": "Window treatment", "budget": 4800, "estimate": 4800, "paid": 0, "cls": ""}, {"name": "Bathroom", "budget": 3817.01, "estimate": 3817.01, "paid": 0, "cls": ""}, {"name": "Bar Stools", "budget": 3000, "estimate": 3000, "paid": 0, "cls": ""}, {"name": "Plants and Planters", "budget": 2495.76, "estimate": 2495.76, "paid": 0, "cls": ""}, {"name": "Vases/Lamps/Misc Decorations", "budget": 2092.8, "estimate": 2092.8, "paid": 0, "cls": ""}, {"name": "Bar retouching", "budget": 1238.4, "estimate": 1238.4, "paid": 0, "cls": ""}, {"name": "Restrooms", "budget": 741.46, "estimate": 741.46, "paid": 0, "cls": ""}, {"name": "3 months rent", "budget": 72501, "estimate": 48333.34, "paid": 48333.34, "cls": ""}, {"name": "Buffer", "budget": 50000, "estimate": 50000, "paid": 0, "cls": ""}, {"name": "Architect and Engineer Fees", "budget": 0, "estimate": 6500, "paid": 6500, "cls": "new"}, {"name": "AC Fixing / Replacement", "budget": 0, "estimate": 12305, "paid": 0, "cls": "new"}, {"name": "Electricity/FPL", "budget": 0, "estimate": 1873, "paid": 1873, "cls": "new"}, {"name": "Hand and Commercial Sink", "budget": 0, "estimate": 1327.61, "paid": 1327.61, "cls": "new"}, {"name": "Hood Cleaning", "budget": 0, "estimate": 500, "paid": 500, "cls": "new"}, {"name": "Grease Trap Inspection", "budget": 0, "estimate": 495, "paid": 495, "cls": "new"}, {"name": "TI from Terra", "budget": -50000, "estimate": -50000, "paid": 0, "cls": "ti"}];
+
+(function buildCatList() {
+  const c = document.getElementById('catListInner');
+  ITEMS_META.forEach((item, i) => {
+    const div = document.createElement('div');
+    let ex = '';
+    if (item.cls === 'ti') ex = ' ti-cat';
+    else if (item.cls === 'new') ex = ' new-cat';
+    div.className = 'cat-item' + ex;
+    div.textContent = item.name;
+    div.onclick = () => selectCat(item.name);
+    div.id = 'ci-' + i;
+    c.appendChild(div);
+  });
+})();
+
+function selectCat(name) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-detail').classList.add('active');
+  document.querySelectorAll('.tab-btn')[1].classList.add('active');
+  document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+  const idx = ITEMS_META.findIndex(x => x.name === name);
+  if (idx >= 0) {
+    const el = document.getElementById('ci-' + idx);
+    if (el) { el.classList.add('active'); el.scrollIntoView({block:'nearest'}); }
+  }
+  renderDetail(name);
+}
+
+function fmtV(v) {
+  if (v === null || v === undefined) return 'TBD';
+  if (v === 0) return '—';
+  if (v < 0) return '($' + Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2}) + ')';
+  return '$' + v.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+
+function renderDetail(name) {
+  const meta = ITEMS_META.find(x => x.name === name) || {};
+  const rows = DETAIL_DATA[name] || [];
+  const pane = document.getElementById('detailPane');
+  const budget = meta.budget || 0;
+  const estimate = meta.estimate;
+  const paid = meta.paid || 0;
+  const diff = (estimate !== null && estimate !== undefined) ? estimate - budget : null;
+  const remain = (estimate !== null && estimate !== undefined) ? estimate - paid : null;
+  const pp = (estimate && estimate > 0) ? Math.round(paid/estimate*100) : 0;
+  const dcls = diff === null ? '' : diff > 0 ? 'dp' : diff < 0 ? 'dn' : '';
+  const dsign = diff && diff > 0 ? '+' : '';
+  let tbl = '';
+  if (rows.length > 0) {
+    tbl = '<div class="dtw"><table class="dtbl"><thead><tr><th>Item</th><th>Vendor</th><th class="n">Unit Cost</th><th class="n">Qty</th><th class="n">Adj. Cost</th><th>Notes</th></tr></thead><tbody>';
+    rows.forEach(r => {
+      const note = r[5] ? '<span class="note-pill">' + r[5] + '</span>' : '';
+      tbl += '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td class="n">' + r[2] + '</td><td class="n">' + r[3] + '</td><td class="n">' + r[4] + '</td><td>' + note + '</td></tr>';
+    });
+    tbl += '</tbody></table></div>';
+  } else {
+    tbl = '<div style="color:var(--mid);font-style:italic;font-size:12px;">No detailed line items available for this category.</div>';
+  }
+  pane.innerHTML =
+    '<div class="dcat-name">' + name + '</div>' +
+    '<div class="dmeta">' +
+      '<div class="dmi"><div class="dml">Budgeted</div><div class="dmv">' + fmtV(budget) + '</div></div>' +
+      '<div class="dmi"><div class="dml">New Estimate</div><div class="dmv ' + dcls + '">' + (estimate !== null ? fmtV(estimate) : 'TBD') + '</div></div>' +
+      '<div class="dmi"><div class="dml">Difference</div><div class="dmv ' + dcls + '">' + (diff !== null ? dsign + fmtV(diff) : '—') + '</div></div>' +
+      '<div class="dmi"><div class="dml">Paid</div><div class="dmv sage">' + fmtV(paid) + '</div></div>' +
+      '<div class="dmi"><div class="dml">Remaining</div><div class="dmv">' + (remain !== null ? fmtV(remain) : 'TBD') + '</div></div>' +
+      '<div class="dmi"><div class="dml">% Paid</div><div class="dmv">' + pp + '%</div></div>' +
+    '</div>' + tbl;
+}
+
+</script>
+</body>
+</html>
